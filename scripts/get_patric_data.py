@@ -191,7 +191,7 @@ def make_picrust_inputs(transcript_folder, pathway_folder, output_folder):
 
     logging.info("Writing out the 16S -> genome mapping")
     with open(os.path.join(output_folder, "genome_mapping.tab"), "wt") as fo:
-        fo.write("#OTU_IDs\genome_ID\n")
+        fo.write("#OTU_IDs\tgenome_ID\n")
         for otu_id, genome_id in genome_mapping.items():
             fo.write("{}\t{}\n".format(otu_id, genome_id))
 
