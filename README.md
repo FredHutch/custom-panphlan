@@ -24,3 +24,9 @@ particular experiment.
 
   * get_patric_data.py: Download data from PATRIC and reformat to be compatible with PICRUSt
   * make_picrust_db.py: Given a Newick tree and the pathway annotation from PATRIC, make a custom PICRUSt database
+
+
+#### Running PICRUSt
+
+For more details on how to analyze a set of 16S results with PICRUSt,
+see this [Metagenome Prediction Tutorial](http://picrust.github.io/picrust/tutorials/metagenome_prediction.html#metagenome-prediction-tutorial)
