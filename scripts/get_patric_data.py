@@ -163,7 +163,7 @@ def make_picrust_inputs(transcript_folder, pathway_folder, output_folder):
 
     logging.info("Writing out 16S copy number information")
     with open(os.path.join(output_folder, "16S_copy_number.tab"), "wt") as fo:
-        fo.write("#OTU_IDs\t16S_rRNA_Count\n")
+        fo.write("OTU_IDs\t16S_rRNA_Count\n")
         for header, copy_number in marker_gene_copy_number.items():
             fo.write("{}\t{}\n".format(header, float(copy_number)))
 
@@ -179,7 +179,7 @@ def make_picrust_inputs(transcript_folder, pathway_folder, output_folder):
         for pathway_id in functional_trait_copy_number[genome_id]
     ]))
     with open(os.path.join(output_folder, "pathway_abundance.tab"), "wt") as fo:
-        fo.write("#OTU_IDs\t{}\n".format("\t".join(all_pathway_ids)))
+        fo.write("OTU_IDs\t{}\n".format("\t".join(all_pathway_ids)))
         for genome_id in functional_trait_copy_number:
             fo.write("{}\t{}\n".format(
                 genome_id,
