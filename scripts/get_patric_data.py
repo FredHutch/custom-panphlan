@@ -63,7 +63,7 @@ def get_patric_data(output_folder=None, test=False, MAX_RETRIES=10):
             break
 
     # Now make the input files needed for PICRUSt
-    make_picrust_inputs(
+    make_summary_files(
         output_subfolders["transcripts"],
         output_subfolders["pathways"],
         output_folder
@@ -81,20 +81,18 @@ def read_tsv(fp):
             yield dict(zip(header, line.rstrip("\n").split("\t")))
 
 
-def make_picrust_inputs(transcript_folder, pathway_folder, output_folder):
+def make_summary_files(transcript_folder, pathway_folder, output_folder):
     """
     
-    Make all of the files needed by PICRUSt to make a custom database
+    Make a set of summary files for downstream analysis
     
     Output files:
         * Marker gene sequences (FASTA .fasta)
-        * Marker gene copy number (tab-delimited .tab)
         * Functional trait copy number (tab-delimited .tab)
         * Mapping file for tree tip ids to genome ids (tab-delimited .tab)
     """
 
     marker_genes = {}
-    marker_gene_copy_number = {}
     functional_trait_copy_number = {}
     genome_mapping = {}
 
@@ -161,19 +159,11 @@ def make_picrust_inputs(transcript_folder, pathway_folder, output_folder):
             assert header not in genome_mapping
             genome_mapping[header] = genome_id
 
-        # Set the marker gene copy number
-        marker_gene_copy_number[genome_id] = len(ssu_rrna)
-
-        # Set the functional trait copy number
-        functional_trait_copy_number[genome_id] = pathways
+        # Set the functional trait copy number for each 16S record ID
+        for header in ssu_rrna.keys():
+            functional_trait_copy_number[header] = pathways
 
     logging.info("Writing out information for all genomes")
-
-    logging.info("Writing out 16S copy number information")
-    with open(os.path.join(output_folder, "16S_copy_number.tab"), "wt") as fo:
-        fo.write("OTU_IDs\t16S_rRNA_Count\n")
-        for header, copy_number in marker_gene_copy_number.items():
-            fo.write("{}\t{}\n".format(header, float(copy_number)))
 
     logging.info("Writing out 16S sequences")
     with open(os.path.join(output_folder, "16S_sequences.fasta"), "wt") as fo:
@@ -183,11 +173,11 @@ def make_picrust_inputs(transcript_folder, pathway_folder, output_folder):
     logging.info("Writing out pathway abundances")
     all_pathway_ids = list(set([
         pathway_id
-        for genome_id in functional_trait_copy_number
-        for pathway_id in functional_trait_copy_number[genome_id]
+        for ssu_rrna_id in functional_trait_copy_number
+        for pathway_id in functional_trait_copy_number[ssu_rrna_id]
     ]))
     with open(os.path.join(output_folder, "pathway_abundance.tab"), "wt") as fo:
-        fo.write("OTU_IDs\t{}\n".format("\t".join(all_pathway_ids)))
+        fo.write("locus_id\t{}\n".format("\t".join(all_pathway_ids)))
         for genome_id in functional_trait_copy_number:
             fo.write("{}\t{}\n".format(
                 genome_id,
@@ -199,7 +189,7 @@ def make_picrust_inputs(transcript_folder, pathway_folder, output_folder):
 
     logging.info("Writing out the 16S -> genome mapping")
     with open(os.path.join(output_folder, "genome_mapping.tab"), "wt") as fo:
-        fo.write("#OTU_IDs\tgenome_ID\n")
+        fo.write("locus_id\tgenome_id\n")
         for otu_id, genome_id in genome_mapping.items():
             fo.write("{}\t{}\n".format(otu_id, genome_id))
 
