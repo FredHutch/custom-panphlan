@@ -14,7 +14,7 @@ from urllib.error import URLError
 from collections import defaultdict
 
 
-def get_patric_data(output_folder=None, test=False):
+def get_patric_data(output_folder=None, test=False, MAX_RETRIES=10):
     # Make sure the output folder exists
     if not os.path.exists(output_folder):
         logging.info(
@@ -47,7 +47,15 @@ def get_patric_data(output_folder=None, test=False):
     logging.info("Downloading data for individual genomes")
 
     for row_ix, genome_entry in enumerate(read_tsv(genome_metadata_fp)):
-        get_genome_entry(genome_entry["genome_id"], output_subfolders)
+        for retry_ix in range(MAX_RETRIES):
+            try:
+                get_genome_entry(genome_entry["genome_id"], output_subfolders)
+                break
+            except:
+                logging.info("Problem getting data for {}, waiting 10 seconds to retry".format(
+                    genome_entry["genome_id"]
+                ))
+                time.sleep(10)
 
         # If we're running in testing mode, stop after 10 genomes
         if test and row_ix == 10:
@@ -118,7 +126,7 @@ def make_picrust_inputs(transcript_folder, pathway_folder, output_folder):
         logging.info("Reading in transcripts for " + genome_id)
 
         ssu_rrna = {
-            header.split(" ")[0]: seq
+            header.split(" ")[0].replace("|", "_").rstrip("_"): seq
             for header, seq in SimpleFastaParser(open(transcript_files[genome_id], "rt"))
             if " 16S " in header or " SSU " in header
         }
